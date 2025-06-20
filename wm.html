@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Sabits Store Watermark</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    canvas {
+      max-width: 100%;
+      border: 1px solid #ccc;
+      display: block;
+      margin-top: 10px;
+    }
+    #downloadBtn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      font-weight: bold;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #downloadBtn:hover {
+      background: #555;
+    }
+  </style>
+</head>
+<body>
+  <h2>Upload Gambar dan Tambahkan Watermark Zig-Zag</h2>
+  <input type="file" id="imageUploader" accept="image/*"><br>
+  <canvas id="canvas"></canvas>
+  <button id="downloadBtn" style="display: none;">Download Hasil Gambar</button>
+
+  <script>
+    const uploader = document.getElementById('imageUploader');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    uploader.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const img = new Image();
+        img.onload = function() {
+          canvas.width = img.width;
+          canvas.height = img.height;
+
+          ctx.drawImage(img, 0, 0);
+
+          const text = "Sabits Store";
+          ctx.font = "bold 40px Arial";
+          ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+          ctx.textAlign = "center";
+
+          ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+          ctx.shadowOffsetX = 2;
+          ctx.shadowOffsetY = 2;
+          ctx.shadowBlur = 4;
+
+          const spacingX = 300;
+          const spacingY = 200;
+
+          for (let y = 0; y < img.height + spacingY; y += spacingY) {
+            for (let x = 0; x < img.width + spacingX; x += spacingX) {
+              let offset = (y / spacingY) % 2 === 0 ? 0 : spacingX / 2;
+              ctx.save();
+              ctx.translate(x + offset, y);
+              ctx.rotate(-Math.PI / 6);
+              ctx.fillText(text, 0, 0);
+              ctx.restore();
+            }
+          }
+
+          // Tampilkan tombol download setelah gambar selesai diproses
+          downloadBtn.style.display = "inline-block";
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    // Fungsi untuk download
+    downloadBtn.addEventListener('click', function() {
+      const link = document.createElement(
