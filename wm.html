@@ -11,30 +11,31 @@
     }
     canvas {
       max-width: 100%;
-      border: 1px solid #ccc;
       display: block;
-      margin-top: 10px;
+      margin-top: 15px;
+      border: 1px solid #ccc;
     }
     #downloadBtn {
+      display: none;
       margin-top: 15px;
       padding: 10px 20px;
-      font-weight: bold;
-      background: #333;
-      color: white;
+      background-color: #333;
+      color: #fff;
       border: none;
       border-radius: 5px;
       cursor: pointer;
     }
     #downloadBtn:hover {
-      background: #555;
+      background-color: #555;
     }
   </style>
 </head>
 <body>
+
   <h2>Upload Gambar dan Tambahkan Watermark Zig-Zag</h2>
   <input type="file" id="imageUploader" accept="image/*"><br>
   <canvas id="canvas"></canvas>
-  <button id="downloadBtn" style="display: none;">Download Hasil Gambar</button>
+  <button id="downloadBtn">Download Hasil Gambar</button>
 
   <script>
     const uploader = document.getElementById('imageUploader');
@@ -42,19 +43,23 @@
     const ctx = canvas.getContext('2d');
     const downloadBtn = document.getElementById('downloadBtn');
 
-    uploader.addEventListener('change', function(e) {
+    uploader.addEventListener('change', function (e) {
       const file = e.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function(evt) {
+      reader.onload = function (event) {
         const img = new Image();
-        img.onload = function() {
+        img.onload = function () {
+          // Set ukuran canvas sesuai gambar
           canvas.width = img.width;
           canvas.height = img.height;
 
+          // Gambar asli
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
           ctx.drawImage(img, 0, 0);
 
+          // Gaya watermark
           const text = "Sabits Store";
           ctx.font = "bold 40px Arial";
           ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
@@ -70,7 +75,7 @@
 
           for (let y = 0; y < img.height + spacingY; y += spacingY) {
             for (let x = 0; x < img.width + spacingX; x += spacingX) {
-              let offset = (y / spacingY) % 2 === 0 ? 0 : spacingX / 2;
+              const offset = (y / spacingY) % 2 === 0 ? 0 : spacingX / 2;
               ctx.save();
               ctx.translate(x + offset, y);
               ctx.rotate(-Math.PI / 6);
@@ -79,14 +84,21 @@
             }
           }
 
-          // Tampilkan tombol download setelah gambar selesai diproses
+          // Setelah selesai menggambar, tampilkan tombol download
           downloadBtn.style.display = "inline-block";
         };
-        img.src = evt.target.result;
+        img.src = event.target.result;
       };
       reader.readAsDataURL(file);
     });
 
-    // Fungsi untuk download
-    downloadBtn.addEventListener('click', function() {
-      const link = document.createElement(
+    downloadBtn.addEventListener('click', function () {
+      const link = document.createElement('a');
+      link.download = "sabits-store-watermarked.png";
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    });
+  </script>
+
+</body>
+</html>
